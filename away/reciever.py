@@ -27,7 +27,7 @@ class Reciever:
         self.soc = socket.socket()
         self.window = [None] * self.w
         self.active_win_packets = self.w
-        self.fileclone = ''
+        self.fileclone = filename
         self.logfile = ''
         self.filepointer = 0
 
@@ -43,6 +43,7 @@ class Reciever:
 
     def sendAcks(self, packet, counter):
         self.last_ack_sent = int(packet.split("/////")[1]) + counter
+        time.sleep(0.9)
         self.soc.send(packet)
         self.logfile.write(time.ctime(time.time()) + "\t" + str(packet.split('/////')[1]) + "Recievinga\n")
         print "Sending ack: ", str(packet.split('/////')[1]) + "ACK\n"
@@ -81,9 +82,12 @@ class Reciever:
     def rMessage(self):
         while True:
             pack = self.soc.recv(2048)
+            #print pack
             coun = 0
             #print pack.split('\t')
+            #print int(pack.split('/////')[1])
             if pack == '$$$$$$$':
+                print "ya"
                 f = open(self.fileclone, 'wb')
                 f.write(self.completeData)
                 f.close()
@@ -91,13 +95,16 @@ class Reciever:
             elif int(pack.split('/////')[1]) == self.expec_seqnum:
                 if self.canAdd():
                     self.add(pack)
+                    #print "hi"
                     packet = self.createResponse(self.expec_seqnum + coun)
                     while self.window[(int(pack.split('/////')[1]) + coun) % self.w] != None:
                         self.appData()
                         coun = coun + 1
+                #print "ggg"
                 self.sendAcks(packet, coun - 1)
                 self.expec_seqnum = self.expec_seqnum + coun
             else:
+                # print int(pack.split('/////')[1])
                 if self.canAdd():
                     self.add(pack)
 
@@ -118,3 +125,4 @@ print "recieved arguments"
 client.soc.connect((host, port))
 client.soc.send("Hello server")
 client.recieve()
+client.soc.close()

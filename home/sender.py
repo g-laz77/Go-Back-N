@@ -36,6 +36,7 @@ class Sender:
             return True
 
     def sendPack(self, pack):  # function to send the packet through the socket
+        time.sleep(0.9)
         conn.send(pack)
         print "Sending packet No.", int(pack.split('/////')[1])
         self.logfile.write(time.ctime(time.time()) + "\t" +
@@ -84,7 +85,7 @@ class Sender:
             return 0
         print "Recieved Ack number: ", packet.split('/////')[1]
         if int(packet.split('/////')[1]) == self.last_ack_seqnum + 1:
-            self.last_ack_seqnum = packet.split('/////')[1]
+            self.last_ack_seqnum = int(packet.split('/////')[1])
             self.window.pop(0)
             self.window.append(None)
             self.active_spaces += 1
@@ -97,7 +98,7 @@ class Sender:
                 self.window.append(None)
                 self.active_spaces += 1
                 k = k + 1
-            self.last_ack_seqnum = packet.split('/////')[1]
+            self.last_ack_seqnum = int(packet.split('/////')[1])
             return 1
 
         else:
@@ -106,19 +107,23 @@ class Sender:
     def sendmess(self, pack_list, length):  # send the messages till all packets are sent
         cur_pack = 0
         while (cur_pack < length or self.last_ack_seqnum != length - 1):
-            while self.canAdd() == True and cur_pack != length - 1:
+            print "hjff"
+            while self.canAdd() == True and cur_pack != length:
                 pack = self.makePack(cur_pack, pack_list[cur_pack])
                 cur_pack = cur_pack + 1
+                print pack
                 self.add(pack)
+            print "wwaaaaattt"
             if self.acc_Acks() == 0:
                 self.resend()
+        print "END"
         conn.send("$$$$$$$")
 
     def run(self):  # run this to send packets from the file
         try:
             fil = open(self.filename, 'rb')
             data = fil.read()
-            pack_list = self.divide(data, 256)
+            pack_list = self.divide(data, 7)
             fil.close()
         except IOError:
             print "No such file exists"
@@ -144,3 +149,4 @@ conn.close()
 conn, addr = server.soc.accept()
 data = conn.recv(1024)
 server.run()
+conn.close()
