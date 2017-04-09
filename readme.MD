@@ -2,8 +2,8 @@
 
 # Implementation of the protocol using sockets
 
-sender.py :- Sends tha packes and recieves the acknowledged packets.
-reciever.py :- Recieves the packets.
+- sender.py :- Sends tha packes and recieves the acknowledged packets.
+- reciever.py :- Recieves the packets.
 
 ## Milestones
 - [x] Created Sender class.
