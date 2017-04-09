@@ -6,6 +6,12 @@ import hashlib
 import random
 host = ""
 port = 10000
+
+def check_sum(self,data):
+    hash_md5 = hashlib.md5()
+    hash_md5.update(data)
+    return hash_md5.hexdigest()
+
 class Sender:
 
     def __init__(self, win_size, timeout, num_packets):
@@ -20,40 +26,84 @@ class Sender:
         self.last_sent_seqnum = -1
         self.last_ack_seqnum = -1
         self.soc.connect((host,port))
-        self.logf = ''
+        self.logfile = ''
 
     def canAdd(self):             #check if a packet can be added to the send window
         if self.active_spaces == 0:
             return False
         else:
             return True
-
+    
+    def sendPack(self,pack):      #function to send the packet through the socket
+        self.sock.send(pack)
+        print "Sending packet No.", int(pack.split('/////')[1])
+        self.logfile.write(time.ctime(time.time()) + "\t" + str(pack.split('/////')[1]) + "Sending\n")
+        
     def add(self, pack):          #add a packet to the send window
         self.last_sent_seqnum = self.cur_seq
         self.cur_seq + = 1
         self.window[self.w - self.active_spaces] = pack
         self.active_spaces -= 1
-        self.send(pack) 
+        self.sendPack(pack) 
+
+    def resend(self):           #function to resend packet if lost
+        cur_num = 0
+        while cur_num < self.w - self.active_spaces:
+            print "Resending: ", str(self.window[cur_num].split('/////')[1])
+            self.logfile.write(time.ctime(time.time()) + "\t" + str(self.window[cur_num].split('/////')[1]) + "Re-sending\n")
+            self.soc.send(self.window[cur_num])
+            cur_num += 1
 
     def makePack(self, num, pac):       #Create a packet
-        pass
+        sequence_number = num
+        file_check_sum = check_sum(pac)
+        pack_size = len(pac)
+        prob = random.randint(0,100)
+        packet = str(file_check_sum) + '/////' + str(sequence_number) + '/////' +  str(pack_size) + '/////' + str(pac) + '/////' + str(prob)     
+        return packet
     
     def divide(self,data,num):    #create packets from datas
         lis = []
         while data:
-            lis.append(data[:2])
-            data = data[2:]
+            lis.append(data[:num])
+            data = data[num:]
         return lis
     
     def acc_Acks(self):            #check if all the sent packets have been ACKed
-        pass
-    
+        try:
+            packet = self.sock.recv(2048)
+        except:
+            print 'Connection lost'
+            self.logfile(time.ctime(time.time()) + "\t" + str(self.last_ack_seqnum+1) + "Lost")
+            return 0
+        print "Recieved Ack number: ", packet.split('/////')[1]
+        if int(packet.split('/////')[1]) == self.last_ack_seqnum+1:
+            self.last_ack_seqnum = packet.split('/////')[1]
+            self.window.pop(0)
+            self.window.append(None)
+            self.active_spaces += 1
+            return 1
+        
+        elif int(packet.split('/////')[1]) > self.last_ack_seqnum+1:
+            k = self.last_ack_seqnum
+            while(k < int(packet.split('/////')[1])):
+                self.window.pop(0)
+                self.window.append(None)
+                self.active_spaces += 1
+                k = k + 1
+            self.last_ack_seqnum = packet.split('/////')[1]
+            return 1
+        
+        else:
+            return 0
+        
     def sendmess(self,pack_list,length):        #send the messages till all packets are sent
         cur_pack = 0
         while (cur_pack < length or self.last_ack_seqnum != length-1):
             while canAdd() == True and cur_pack != length - 1 :
-                pack = self.makePack(cur_pack,pack_list[cur_pack]
+                pack = self.makePack(cur_pack,pack_list[cur_pack])
                 cur_pack = cur_pack + 1
+                self.add(pack)
             if self.acc_Acks() == 0:
                 self.resend()
         self.soc.send("$$$$$$$")
@@ -67,6 +117,6 @@ class Sender:
         except IOError:
             print "No such file exists"
         fname = "servlog.txt"
-        self.logf = open(os.curdir + "/" + fname,"w+")
+        self.logfile = open(os.curdir + "/" + fname,"w+")
         l = len(pack_list)
         self.sendmess(pack_list,l)
