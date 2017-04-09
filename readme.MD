@@ -8,6 +8,7 @@
 ## Milestones
 - [x] Created Sender class.
 - [x] Created Reciever class.
+- [x] Created sockets in main function to initiate file exchange. (Accept input)
 - [ ] Should implement the random losing of messages.
 - [ ] Debug the code for any errors.
 - [ ] Should create sockets and exchange file between sender and reciever. 
