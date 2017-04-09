@@ -1,6 +1,5 @@
 import socket
 import time
-import system
 import os
 import hashlib
 import random
@@ -9,7 +8,7 @@ host = ""
 port = 60000
 
 
-def check_sum(self, data):
+def check_sum(data):
     hash_md5 = hashlib.md5()
     hash_md5.update(data)
     return hash_md5.hexdigest()
@@ -28,7 +27,6 @@ class Sender:
         self.soc = socket.socket()
         self.last_sent_seqnum = -1
         self.last_ack_seqnum = -1
-        self.soc.connect((host, port))
         self.logfile = ''
 
     def canAdd(self):  # check if a packet can be added to the send window
@@ -38,14 +36,14 @@ class Sender:
             return True
 
     def sendPack(self, pack):  # function to send the packet through the socket
-        self.sock.send(pack)
+        self.soc.send(pack)
         print "Sending packet No.", int(pack.split('/////')[1])
         self.logfile.write(time.ctime(time.time()) + "\t" +
                            str(pack.split('/////')[1]) + "Sending\n")
 
     def add(self, pack):  # add a packet to the send window
         self.last_sent_seqnum = self.cur_seq
-        self.cur_seq + = 1
+        self.cur_seq += 1
         self.window[self.w - self.active_spaces] = pack
         self.active_spaces -= 1
         self.sendPack(pack)
@@ -108,7 +106,7 @@ class Sender:
     def sendmess(self, pack_list, length):  # send the messages till all packets are sent
         cur_pack = 0
         while (cur_pack < length or self.last_ack_seqnum != length - 1):
-            while canAdd() == True and cur_pack != length - 1:
+            while self.canAdd() == True and cur_pack != length - 1:
                 pack = self.makePack(cur_pack, pack_list[cur_pack])
                 cur_pack = cur_pack + 1
                 self.add(pack)
@@ -120,8 +118,8 @@ class Sender:
         try:
             fil = open(self.filename, 'rb')
             data = fil.read()
-            pack_list = self.divide(data, 256))
-            f.close()
+            pack_list = self.divide(data, 256)
+            fil.close()
         except IOError:
             print "No such file exists"
         fname="servlog.txt"
@@ -130,15 +128,19 @@ class Sender:
         self.sendmess(pack_list, l)
 
 
-if name == '__main__':
-    win = raw_input("Enter window size: ")
-    numpac = raw_input("Enter the number of packets: ")
-    tim = raw_input("Enter the timeout: ")
-    server=Sender(win, tim, numpac)
-    server.soc.bind((host, port))
-    server.soc.listen(5)
-    conn, addr=server.soc.recv(1024)
-    conn.send(str(win) + "/////" + str(tim) + "/////" + "sample.txt")
-    conn.close()
-    conn, addr = server.soc.recv(1024)
-    server.run()
+
+win = raw_input("Enter window size: ")
+numpac = raw_input("Enter the number of packets: ")
+tim = raw_input("Enter the timeout: ")
+server=Sender(int(win), float(tim), int(numpac))
+server.soc.bind((host, port))
+server.soc.listen(5)
+conn, addr=server.soc.accept()
+data = conn.recv(1024)
+print "recieved connection"
+conn.send(str(win) + "/////" + str(tim) + "/////" + "sample.txt")
+conn.close()
+
+conn, addr = server.soc.accept()
+data = conn.recv(1024)
+server.run()

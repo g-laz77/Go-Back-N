@@ -1,6 +1,5 @@
 import socket
 import time
-import system
 import os
 import hashlib
 import random
@@ -9,7 +8,7 @@ host = ""
 port = 60000
 
 
-def check_sum(self, data):
+def check_sum(data):
     hash_md5 = hashlib.md5()
     hash_md5.update(data)
     return hash_md5.hexdigest()
@@ -17,7 +16,7 @@ def check_sum(self, data):
 
 class Reciever:
 
-    def __init__(win_size, timeout, filename):
+    def __init__(self,win_size, timeout, filename):
         self.w = win_size
         self.completeData = ''
         self.t = timeout
@@ -46,11 +45,11 @@ class Reciever:
         self.last_ack_sent = self.last_ack_sent + counter
         self.soc.send(packet)
         self.logfile.write(time.ctime(time.time()) + "\t" + str(pack.split('/////')[1]) + "Sending\n")
-        print "Sending ack: ", str(pack.split('/////')[1]) + "ACK\n")
+        print "Sending ack: ", str(pack.split('/////')[1]) + "ACK\n"
 
     def remove(self, poin):
         self.window[self.window.index(poin)] = None
-        self.active_win - packets += 1
+        self.active_win_packets += 1
 
     def add(self, packet):
         seqnum = packet.split('/////')[3]
@@ -69,7 +68,7 @@ class Reciever:
         else:
             print "In buffer!", packet.split('/////')[1]
 
-    def appData(self)
+    def appData(self):
         self.completeData += self.window[self.filepointer].split('/////')[3]
         self.filepointer += 1
         self.remove(self.filepointer - 1)
@@ -78,7 +77,7 @@ class Reciever:
 
     def rMessage(self):
         while True:
-            pack = self.sock.recv(2048)
+            pack = self.soc.recv(2048)
             coun = 0
             if pack == '$$$$$$$':
                 f = open(self.fileclone, 'wb')
@@ -98,20 +97,20 @@ class Reciever:
                 if self.canAdd():
                     self.add(pack)
 
-    def recieve(self, logname):
-        self.logfile = open(os.curdir + '/' + logname, 'wb')
+    def recieve(self):
+        self.logfile = open(os.curdir + '/' + "clientlog.txt", 'wb')
         self.rMessage()
         self.logfile.close()
 
 
-if name == '__main__':
-    s = socket.socket()
-    s.connect((host, port))
-    s.send("Hello Server")
-    mess = s.recv(1024)
-    args = mess.split("/////")
-    s.close()
-    client = Reciever(int(args[0]), float(args[1]), args[2])
-    client.soc.connect((host, port))
-    client.send("Hello server")
-    client.recieve()
+s = socket.socket()
+s.connect((host, port))
+s.send("Hello Server")
+mess = s.recv(1024)
+args = mess.split("/////")
+s.close()
+client = Reciever(int(args[0]), float(args[1]), args[2])
+print "recieved arguments"
+client.soc.connect((host, port))
+client.soc.send("Hello server")
+client.recieve()
