@@ -131,14 +131,14 @@ class Sender:
 
 
 if name == '__main__':
-    win = raw_input("Enter window size: ")
-    numpac = raw_input("Enter the number of packets: ")
-    tim = raw_input("Enter the timeout: ")
-    server = Sender(win,tim,numpac)
-    server.soc.bind((host,port))
+    win=raw_input("Enter window size: ")
+    numpac=raw_input("Enter the number of packets: ")
+    tim=raw_input("Enter the timeout: ")
+    server=Sender(win, tim, numpac)
+    server.soc.bind((host, port))
     server.soc.listen(5)
-    conn, addr = server.soc.recv(1024)
+    conn, addr=server.soc.recv(1024)
     conn.send(str(win) + "/////" + str(tim) + "/////" + "sample.txt")
     conn.close()
-    conn, addr = server.soc.recv(1024)
+    conn, addr=server.soc.recv(1024)
     server.run()

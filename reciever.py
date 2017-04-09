@@ -8,6 +8,7 @@ import random
 host = ""
 port = 60000
 
+
 def check_sum(self, data):
     hash_md5 = hashlib.md5()
     hash_md5.update(data)
@@ -105,12 +106,12 @@ class Reciever:
 
 if name == '__main__':
     s = socket.socket()
-    s.connect((host,port))
+    s.connect((host, port))
     s.send("Hello Server")
     mess = s.recv(1024)
     args = mess.split("/////")
     s.close()
-    client = Reciever(int(args[0]),float(args[1]),args[2])
-    client.soc.connect((host,port))
+    client = Reciever(int(args[0]), float(args[1]), args[2])
+    client.soc.connect((host, port))
     client.send("Hello server")
     client.recieve()
