@@ -76,11 +76,11 @@ class Sender:
 
     def acc_Acks(self):  # check if all the sent packets have been ACKed
         try:
-            packet = self.sock.recv(2048)
+            packet = conn.recv(2048)
+            print packet
         except:
             print 'Connection lost'
-            self.logfile(time.ctime(time.time()) + "\t" +
-                         str(self.last_ack_seqnum + 1) + "Lost")
+            self.logfile.write(time.ctime(time.time()) + "\t" + str(self.last_ack_seqnum + 1) + "Lost")
             return 0
         print "Recieved Ack number: ", packet.split('/////')[1]
         if int(packet.split('/////')[1]) == self.last_ack_seqnum + 1:

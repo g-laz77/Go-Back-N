@@ -42,19 +42,20 @@ class Reciever:
         return str(mess_check_sum) + "/////" + str(seq_num) + "/////" + "ACK"
 
     def sendAcks(self, packet, counter):
-        self.last_ack_sent = self.last_ack_sent + counter
+        self.last_ack_sent = int(packet.split("/////")[1]) + counter
         self.soc.send(packet)
-        self.logfile.write(time.ctime(time.time()) + "\t" + str(pack.split('/////')[1]) + "Sending\n")
-        print "Sending ack: ", str(pack.split('/////')[1]) + "ACK\n"
+        self.logfile.write(time.ctime(time.time()) + "\t" + str(packet.split('/////')[1]) + "Recievinga\n")
+        print "Sending ack: ", str(packet.split('/////')[1]) + "ACK\n"
 
     def remove(self, poin):
+        #print self.window[0], self.window.index(str(poin))
         self.window[self.window.index(poin)] = None
         self.active_win_packets += 1
 
     def add(self, packet):
         pack = packet.split('/////')[3]
         seqnum = int(packet.split('/////')[1])
-        print packet#, self.window[seqnum % self.w]
+        #print packet#, self.window[seqnum % self.w]
         if self.window[seqnum % self.w] == None:
             if seqnum == self.expec_seqnum:
                 self.logfile.write(time.ctime(
@@ -73,7 +74,7 @@ class Reciever:
     def appData(self):
         self.completeData += self.window[self.filepointer].split('/////')[3]
         self.filepointer += 1
-        self.remove(self.filepointer - 1)
+        self.remove(self.window[self.filepointer - 1])
         if self.filepointer >= self.w:
             self.filepointer = 0
 
@@ -81,6 +82,7 @@ class Reciever:
         while True:
             pack = self.soc.recv(2048)
             coun = 0
+            #print pack.split('\t')
             if pack == '$$$$$$$':
                 f = open(self.fileclone, 'wb')
                 f.write(self.completeData)
@@ -94,7 +96,7 @@ class Reciever:
                         self.appData()
                         coun = coun + 1
                 self.sendAcks(packet, coun - 1)
-                self.expected_seqnum = self.expected_seqnum + coun
+                self.expec_seqnum = self.expec_seqnum + coun
             else:
                 if self.canAdd():
                     self.add(pack)
