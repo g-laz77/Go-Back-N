@@ -36,7 +36,7 @@ class Sender:
             return True
 
     def sendPack(self, pack):  # function to send the packet through the socket
-        self.soc.send(pack)
+        conn.send(pack)
         print "Sending packet No.", int(pack.split('/////')[1])
         self.logfile.write(time.ctime(time.time()) + "\t" +
                            str(pack.split('/////')[1]) + "Sending\n")
@@ -54,7 +54,7 @@ class Sender:
             print "Resending: ", str(self.window[cur_num].split('/////')[1])
             self.logfile.write(time.ctime(
                 time.time()) + "\t" + str(self.window[cur_num].split('/////')[1]) + "Re-sending\n")
-            self.soc.send(self.window[cur_num])
+            conn.send(self.window[cur_num])
             cur_num += 1
 
     def makePack(self, num, pac):  # Create a packet
@@ -112,7 +112,7 @@ class Sender:
                 self.add(pack)
             if self.acc_Acks() == 0:
                 self.resend()
-        self.soc.send("$$$$$$$")
+        conn.send("$$$$$$$")
 
     def run(self):  # run this to send packets from the file
         try:

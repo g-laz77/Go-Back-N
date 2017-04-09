@@ -32,13 +32,13 @@ class Reciever:
         self.filepointer = 0
 
     def canAdd(self):  # check if a packet can be added to the send window
-        if self.active_spaces == 0:
+        if self.active_win_packets == 0:
             return False
         else:
             return True
 
     def createResponse(self, seq_num):
-        mess_check_sum = check_sum(self.w)
+        mess_check_sum = check_sum(str(seq_num))
         return str(mess_check_sum) + "/////" + str(seq_num) + "/////" + "ACK"
 
     def sendAcks(self, packet, counter):
@@ -52,7 +52,9 @@ class Reciever:
         self.active_win_packets += 1
 
     def add(self, packet):
-        seqnum = packet.split('/////')[3]
+        pack = packet.split('/////')[3]
+        seqnum = int(packet.split('/////')[1])
+        print packet#, self.window[seqnum % self.w]
         if self.window[seqnum % self.w] == None:
             if seqnum == self.expec_seqnum:
                 self.logfile.write(time.ctime(
@@ -88,7 +90,7 @@ class Reciever:
                 if self.canAdd():
                     self.add(pack)
                     packet = self.createResponse(self.expec_seqnum + coun)
-                    while self.window[(int(pack.split('/////')[1]) + counter) % self.w] != None:
+                    while self.window[(int(pack.split('/////')[1]) + coun) % self.w] != None:
                         self.appData()
                         coun = coun + 1
                 self.sendAcks(packet, coun - 1)
