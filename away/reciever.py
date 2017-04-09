@@ -40,13 +40,13 @@ class Reciever:
 
     def createResponse(self, seq_num):
         mess_check_sum = check_sum(self.w)
-        return str(mess_check_sum) + "/////" + str(seq_num) + "/////" + str(self.w)
+        return str(mess_check_sum) + "/////" + str(seq_num) + "/////" + "ACK"
 
     def sendAcks(self, packet, counter):
         self.last_ack_sent = self.last_ack_sent + counter
         self.soc.send(packet)
-        self.logfile.write(time.ctime(time.time()) + "\t" + self.logfile.write(time.ctime(time.time()) + "\t" + str(pack.split('/////')[1]) + "Sending\n")
-                           print "Sending ack: ", str(pack.split('/////')[1]) + "ACK\n")
+        self.logfile.write(time.ctime(time.time()) + "\t" + str(pack.split('/////')[1]) + "Sending\n")
+        print "Sending ack: ", str(pack.split('/////')[1]) + "ACK\n")
 
     def remove(self, poin):
         self.window[self.window.index(poin)] = None
