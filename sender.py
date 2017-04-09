@@ -22,27 +22,33 @@ class Sender:
         self.soc.connect((host,port))
         self.logf = ''
 
-    def canAdd(self):
+    def canAdd(self):             #check if a packet can be added to the send window
         if self.active_spaces == 0:
             return False
         else:
             return True
 
-    def add(self, pack):
+    def add(self, pack):          #add a packet to the send window
         self.last_sent_seqnum = self.cur_seq
         self.cur_seq + = 1
         self.window[self.w - self.active_spaces] = pack
         self.active_spaces -= 1
         self.send(pack) 
 
-    def divide(self,data,num):
+    def makePack(self, num, pac):       #Create a packet
+        pass
+    
+    def divide(self,data,num):    #create packets from datas
         lis = []
         while data:
             lis.append(data[:2])
             data = data[2:]
         return lis
     
-    def sendmess(self,pack_list,length):
+    def acc_Acks(self):            #check if all the sent packets have been ACKed
+        pass
+    
+    def sendmess(self,pack_list,length):        #send the messages till all packets are sent
         cur_pack = 0
         while (cur_pack < length or self.last_ack_seqnum != length-1):
             while canAdd() == True and cur_pack != length - 1 :
@@ -52,7 +58,7 @@ class Sender:
                 self.resend()
         self.soc.send("$$$$$$$")
 
-    def run(self):
+    def run(self):                  #run this to send packets from the file
         try:
             fil = open(self.filename, 'rb')
             data = fil.read()
