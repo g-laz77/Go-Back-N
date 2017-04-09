@@ -5,10 +5,14 @@ import os
 import hashlib
 import random
 
-def check_sum(self,data):
+host = ""
+port = 60000
+
+def check_sum(self, data):
     hash_md5 = hashlib.md5()
     hash_md5.update(data)
     return hash_md5.hexdigest()
+
 
 class Reciever:
 
@@ -27,12 +31,12 @@ class Reciever:
         self.logfile = ''
         self.filepointer = 0
 
-    def canAdd(self):             #check if a packet can be added to the send window
+    def canAdd(self):  # check if a packet can be added to the send window
         if self.active_spaces == 0:
             return False
         else:
             return True
-    
+
     def createResponse(self, seq_num):
         mess_check_sum = check_sum(self.w)
         return str(mess_check_sum) + "/////" + str(seq_num) + "/////" + str(self.w)
@@ -41,24 +45,26 @@ class Reciever:
         self.last_ack_sent = self.last_ack_sent + counter
         self.soc.send(packet)
         self.logfile.write(time.ctime(time.time()) + "\t" + self.logfile.write(time.ctime(time.time()) + "\t" + str(pack.split('/////')[1]) + "Sending\n")
-        print "Sending ack: ", str(pack.split('/////')[1]) + "ACK\n")
-    
+                           print "Sending ack: ", str(pack.split('/////')[1]) + "ACK\n")
+
     def remove(self, poin):
         self.window[self.window.index(poin)] = None
-        self.active_win-packets += 1
-        
+        self.active_win - packets += 1
+
     def add(self, packet):
         seqnum = packet.split('/////')[3]
         if self.window[seqnum % self.w] == None:
             if seqnum == self.expec_seqnum:
-                self.logfile.write(time.ctime(time.time()) + "\t" + str(packet.split('/////')[1]) + "Recieve\n")
-                self.active_win_packets -= 1 
+                self.logfile.write(time.ctime(
+                    time.time()) + "\t" + str(packet.split('/////')[1]) + "Recieve\n")
+                self.active_win_packets -= 1
                 self.window[seqnum % self.w] = packet
             elif seqnum > self.expec_seqnum:
-                self.logfile.write(time.ctime(time.time()) + "\t" + str(packet.split('/////')[1]) + "Recieving buffer\n")
-                self.active_win_packets -= 1 
+                self.logfile.write(time.ctime(
+                    time.time()) + "\t" + str(packet.split('/////')[1]) + "Recieving buffer\n")
+                self.active_win_packets -= 1
                 self.window[seqnum % self.w] = packet
-        
+
         else:
             print "In buffer!", packet.split('/////')[1]
 
@@ -68,13 +74,13 @@ class Reciever:
         self.remove(self.filepointer - 1)
         if self.filepointer >= self.w:
             self.filepointer = 0
-        
+
     def rMessage(self):
         while True:
             pack = self.sock.recv(2048)
             coun = 0
             if pack == '$$$$$$$':
-                f = open(self.fileclone,'wb')
+                f = open(self.fileclone, 'wb')
                 f.write(self.completeData)
                 f.close()
                 break
@@ -82,16 +88,29 @@ class Reciever:
                 if self.canAdd():
                     self.add(pack)
                     packet = self.createResponse(self.expec_seqnum + coun)
-                    while self.window[(int(pack.split('/////')[1]) + counter)%self.w] != None:
+                    while self.window[(int(pack.split('/////')[1]) + counter) % self.w] != None:
                         self.appData()
                         coun = coun + 1
                 self.sendAcks(packet, coun - 1)
                 self.expected_seqnum = self.expected_seqnum + coun
             else:
                 if self.canAdd():
-                    self.add(pack)    
+                    self.add(pack)
 
     def recieve(self, logname):
         self.logfile = open(os.curdir + '/' + logname, 'wb')
         self.rMessage()
         self.logfile.close()
+
+
+if name == '__main__':
+    s = socket.socket()
+    s.connect((host,port))
+    s.send("Hello Server")
+    mess = s.recv(1024)
+    args = mess.split("/////")
+    s.close()
+    client = Reciever(int(args[0]),float(args[1]),args[2])
+    client.soc.connect((host,port))
+    client.send("Hello server")
+    client.recieve()
