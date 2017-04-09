@@ -37,13 +37,18 @@ class Reciever:
         else:
             return True
 
-    def createResponse(self, seq_num):
+    def createResponse(self, seq_num, typ):
         mess_check_sum = check_sum(str(seq_num))
-        return str(mess_check_sum) + "/////" + str(seq_num) + "/////" + "ACK"
+        return str(mess_check_sum) + "/////" + str(seq_num) + "/////" + typ
 
     def sendAcks(self, packet, counter):
+        if counter == -1:
+            self.logfile.write(time.ctime(time.time()) + "\t" + str(packet.split('/////')[1]) + "Recievinga\n")
+            self.soc.send(packet)
+            print "Sending ack: ", str(packet.split('/////')[1]) + "NAK\n"
+            return
         self.last_ack_sent = int(packet.split("/////")[1]) + counter
-        time.sleep(0.9)
+        time.sleep(1.9)
         self.soc.send(packet)
         self.logfile.write(time.ctime(time.time()) + "\t" + str(packet.split('/////')[1]) + "Recievinga\n")
         print "Sending ack: ", str(packet.split('/////')[1]) + "ACK\n"
@@ -85,24 +90,26 @@ class Reciever:
             #print pack
             coun = 0
             #print pack.split('\t')
-            #print int(pack.split('/////')[1])
+            #print int(pack.split('/////')[4])
             if pack == '$$$$$$$':
-                print "ya"
+                #print "ya"
                 f = open(self.fileclone, 'wb')
                 f.write(self.completeData)
                 f.close()
                 break
             elif int(pack.split('/////')[1]) == self.expec_seqnum:
                 if self.canAdd():
-                    self.add(pack)
-                    #print "hi"
-                    packet = self.createResponse(self.expec_seqnum + coun)
-                    while self.window[(int(pack.split('/////')[1]) + coun) % self.w] != None:
-                        self.appData()
-                        coun = coun + 1
-                #print "ggg"
-                self.sendAcks(packet, coun - 1)
-                self.expec_seqnum = self.expec_seqnum + coun
+                    if int(pack.split("/////")[4]) > 70:
+                        self.add(pack)
+                        packet = self.createResponse(self.expec_seqnum + coun, "ACK")
+                        while self.window[(int(pack.split('/////')[1]) + coun) % self.w] != None:
+                            self.appData()
+                            coun = coun + 1
+                    else:
+                        packet = self.createResponse(self.expec_seqnum + coun, "NAK")
+                    #print "ggg"
+                    self.sendAcks(packet, coun - 1)
+                    self.expec_seqnum = self.expec_seqnum + coun
             else:
                 # print int(pack.split('/////')[1])
                 if self.canAdd():
