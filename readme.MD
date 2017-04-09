@@ -1,11 +1,11 @@
-#Go-Back-N Protocol
+# Go-Back-N Protocol
 
-#Implementation of the protocol using sockets
+# Implementation of the protocol using sockets
 
 sender.py :- Sends tha packes and recieves the acknowledged packets.
 reciever.py :- Recieves the packets.
 
-##Milestones
+## Milestones
 - [x] Created Sender class.
 - [x] Created Reciever class.
 - [ ] Should implement the random losing of messages.
