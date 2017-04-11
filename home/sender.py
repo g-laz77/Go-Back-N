@@ -36,7 +36,7 @@ class Sender:
             return True
 
     def sendPack(self, pack):  # function to send the packet through the socket
-        time.sleep(0.8)
+        time.sleep(1.5)
         conn.send(pack)
         print "Sending packet No.", int(pack.split('/////')[1])
         self.logfile.write(time.ctime(time.time()) + "\t" +
@@ -55,10 +55,11 @@ class Sender:
             print "Resending: ", str(self.window[cur_num].split('/////')[1])
             self.logfile.write(time.ctime(
                 time.time()) + "\t" + str(self.window[cur_num].split('/////')[1]) + "Re-sending\n")
-            time.sleep(0.8)
+            time.sleep(1.4)
             temp = self.window[cur_num].split('/////')
             self.window[cur_num] = temp[0] + '/////' + temp[1] + '/////' + temp[2] + '/////' + temp[3] + '/////' + str(random.randint(70,100)) 
             print self.window[cur_num]
+            
             conn.send(self.window[cur_num])
             cur_num += 1
 
@@ -115,15 +116,17 @@ class Sender:
         cur_pack = 0
         while (cur_pack < length or self.last_ack_seqnum != length - 1):
             #print "hjff"
-            while self.canAdd() == True and cur_pack != length:
+            while self.canAdd() and cur_pack != length:
                 pack = self.makePack(cur_pack, pack_list[cur_pack])
                 cur_pack = cur_pack + 1
-                print pack
+                print pack.split('/////')
                 self.add(pack)
-            print "wwaaaaattt"
+            #print "wwaaaaattt"
             if self.acc_Acks() == 0:
+                time.sleep(1)
                 self.resend()
         print "END"
+        time.sleep(1)
         conn.send("$$$$$$$")
 
     def run(self):  # run this to send packets from the file
