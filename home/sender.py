@@ -28,7 +28,7 @@ class Sender:
         self.last_sent_seqnum = -1
         self.last_ack_seqnum = -1
         self.logfile = ''
-
+        
     def canAdd(self):  # check if a packet can be added to the send window
         if self.active_spaces == 0:
             return False
@@ -58,7 +58,7 @@ class Sender:
             time.sleep(1.4)
             temp = self.window[cur_num].split('/////')
             self.window[cur_num] = temp[0] + '/////' + temp[1] + '/////' + temp[2] + '/////' + temp[3] + '/////' + str(random.randint(70,100)) 
-            print self.window[cur_num]
+            print self.window[cur_num].split('/////')
             
             conn.send(self.window[cur_num])
             cur_num += 1
@@ -70,7 +70,7 @@ class Sender:
         prob = random.randint(0, 100)
         packet = str(file_check_sum) + '/////' + str(sequence_number) + \
                      '/////' + str(pack_size) + '/////' + \
-                                   str(pac) + '/////' + str(prob)
+                                   str(pac) + '/////' + str(prob) 
         return packet
 
     def divide(self, data, num):  # create packets from datas
@@ -85,13 +85,13 @@ class Sender:
             packet = conn.recv(1024)
             print packet.split('/////')
         except:
-            print 'Connection lost'
-            self.logfile.write(time.ctime(time.time()) + "\t" + str(self.last_ack_seqnum + 1) + "Lost")
+            print 'Connection lost due to timeout!'
+            self.logfile.write(time.ctime(time.time()) + "\t" + str(self.last_ack_seqnum + 1) + "Lost TImeout")
             return 0
         if packet.split('/////')[2] == "NAK":
-            #print "bbhbhbh"
             return 0
         print "Recieved Ack number: ", packet.split('/////')[1]
+        print "\n"
         if int(packet.split('/////')[1]) == self.last_ack_seqnum + 1:
             self.last_ack_seqnum = int(packet.split('/////')[1])
             self.window.pop(0)
@@ -121,6 +121,7 @@ class Sender:
                 cur_pack = cur_pack + 1
                 print pack.split('/////')
                 self.add(pack)
+            print "\n"
             #print "wwaaaaattt"
             if self.acc_Acks() == 0:
                 time.sleep(1)
@@ -155,7 +156,7 @@ data = conn.recv(1024)
 print "recieved connection"
 conn.send(str(win) + "/////" + str(tim) + "/////" + "sample.txt")
 conn.close()
-
+server.soc.settimeout(5)
 conn, addr = server.soc.accept()
 data = conn.recv(1024)
 server.run()

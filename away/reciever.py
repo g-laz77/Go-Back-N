@@ -43,7 +43,7 @@ class Reciever:
 
     def sendAcks(self, packet, counter):
         if counter == -1:
-            self.logfile.write(time.ctime(time.time()) + "\t" + str(packet.split('/////')[1]) + "Recievinga\n")
+            self.logfile.write(time.ctime(time.time()) + "\t" + str(packet.split('/////')[1]) + "Recieving\n")
             time.sleep(1.7)
             self.soc.send(packet)
             print "Sending ack: ", str(packet.split('/////')[1]) + "NAK\n"
@@ -51,7 +51,7 @@ class Reciever:
         self.last_ack_sent = int(packet.split("/////")[1]) + counter
         time.sleep(1.7)
         self.soc.send(packet)
-        self.logfile.write(time.ctime(time.time()) + "\t" + str(packet.split('/////')[1]) + "Recievinga\n")
+        self.logfile.write(time.ctime(time.time()) + "\t" + str(packet.split('/////')[1]) + "Recieving\n")
         print "Sending ack: ", str(packet.split('/////')[1]) + "ACK\n"
 
     def remove(self, poin):
