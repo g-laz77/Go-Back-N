@@ -11,5 +11,5 @@
 - [x] Created sockets in main function to initiate file exchange. (Accept input)
 - [x] Should implement the random losing of messages.
 - [x] Debug the code for any errors. 
-- [ ] Should implement timeout.
+- [x] Should implement timeout.
 
